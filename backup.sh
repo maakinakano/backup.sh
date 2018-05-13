@@ -4,8 +4,7 @@ if [ $# = 0 ]; then
 fi
 FILE=$1
 if [[ ! "$FILE" =~ ^/ ]]; then
-   echo An error occurred. Absolute path required.
-   exit 1
+   FILE=`pwd`/$FILE
 fi
 if [ ! -e $FILE ]; then
    echo An error occurred. $FILE does not exist.
@@ -24,4 +23,6 @@ for ((i=0; i<${#DIR[@]}-1; i++)) {
    fi
    cd ${DIR[$i]}
 }
-cp $FILE ~/.backup$FILE
+DATE=`date '+%Y%m%d_%H%M%S'`
+cp $FILE ~/.backup${FILE}_${DATE}
+ls

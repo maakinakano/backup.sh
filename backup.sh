@@ -25,4 +25,3 @@ for ((i=0; i<${#DIR[@]}-1; i++)) {
 }
 DATE=`date '+%Y%m%d_%H%M%S'`
 cp $FILE ~/.backup${FILE}_${DATE}
-ls

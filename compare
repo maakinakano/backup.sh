@@ -1,5 +1,5 @@
 if [ $# = 0 ]; then
-   echo Compare files [date_from [date_to]]
+   echo Usage: Compare files
    exit 1
 fi
 FILE=$1
@@ -31,10 +31,14 @@ do
         echo [$i] ${YMD:0:4}-${YMD:4:2}-${YMD:6:2} ${HMS:0:2}:${HMS:2:2}:${HMS:4:2}
         fi
     }
+    if [ -e $FILE ]; then
+        echo [${#BACKUPS[@]}] current version!
+        BACKUPS+=($FILE)
+    fi
     read -p " > " COM ARG1 ARG2
     case "$COM" in
     "cat" )
-        if [[ ! $ARG1 =~ ^[0-9]*$ ]]; then
+        if [[ ! $ARG1 =~ ^[0-9]+$ ]]; then
             echo illegal argument.
         elif [ ! $ARG1 -lt ${#BACKUPS[@]} ]; then
             echo argument range is [0-$((${#BACKUPS[@]}-1))].
@@ -44,7 +48,7 @@ do
             echo ------------------------
         fi;;
     "less" )
-        if [[ ! $ARG1 =~ ^[0-9]*$ ]]; then
+        if [[ ! $ARG1 =~ ^[0-9]+$ ]]; then
             echo illegal argument.
         elif [ ! $ARG1 -lt ${#BACKUPS[@]} ]; then
             echo argument range is [0-$((${#BACKUPS[@]}-1))].
@@ -52,7 +56,7 @@ do
             less ${BACKUPS[$ARG1]}
         fi;;
     "diff" )
-        if [[ ! $ARG1 =~ ^[0-9]*$ ]] || [[ ! $ARG2 =~ ^[0-9]*$ ]]; then
+        if [[ ! $ARG1 =~ ^[0-9]+$ ]] || [[ ! $ARG2 =~ ^[0-9]+$ ]]; then
             echo illegal arguments.
         elif [ ! $ARG1 -lt ${#BACKUPS[@]} ] || [ ! $ARG2 -lt ${#BACKUPS[@]} ]; then
             echo argument range is [0-$((${#BACKUPS[@]}-1))].
@@ -62,7 +66,7 @@ do
             echo ------------------------
         fi;;
     "rm" )
-        if [[ ! $ARG1 =~ ^[0-9]*$ ]]; then
+        if [[ ! $ARG1 =~ ^[0-9]+$ ]]; then
             echo illegal argument.
         elif [ ! $ARG1 -lt ${#BACKUPS[@]} ]; then
             echo argument range is [0-$((${#BACKUPS[@]}-1))].
@@ -71,7 +75,23 @@ do
             case "$YN" in "Y" ) rm -fr ${BACKUPS[$ARG1]};; esac
         fi;;
     "q"|"quit"|"exit" )
+        echo bye!!
         exit;;
+    "store"|"cp" )
+        if [[ ! $ARG1 =~ ^[0-9]+$ ]]; then
+            echo illegal argument.
+        elif [ ! $ARG1 -lt ${#BACKUPS[@]} ]; then
+            echo argument range is [0-$((${#BACKUPS[@]}-1))].
+        elif [ $ARG1 = $((${#BACKUPS[@]}-1)) ]; then
+            echo error! [$ARG1] is current version.
+        else
+            read -p " would you backup current version? [Y/n]:" YN
+            case "$YN" in "Y" ) cp $FILE ~/.backup${FILE}_`date '+%Y%m%d_%H%M%S'`;; esac
+            
+            cp ${BACKUPS[$ARG1]} $FILE
+            echo store is completed!!
+            exit
+        fi;;
     * )
         echo unknow command.;;
     esac
